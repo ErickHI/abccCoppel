@@ -1,0 +1,168 @@
+﻿@using abccCoppel.Models.ViewModels;
+@model List<Producto>
+
+<h1>Productos</h1>
+
+<p>
+    <a asp-action="Create">Crear</a>
+</p>
+
+<table class="table" style="max-width: 100%;">
+    <thead>
+        <tr>
+            <th>SKU</th>
+            <th>NOMBRE</th>
+            <th>MARCA</th>
+            <th>MODELO</th>
+
+            <th>STOCK</th>
+            <th>CANTIDAD</th>
+            <th>DEPARTAMENTO</th>
+            <th>CLASE</th>
+            <th>FAMILIA</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(m=>product.Sku)</td>
+                <td>@Html.DisplayFor(m=>product.Articulo)</td>
+                <td>@Html.DisplayFor(m=>product.Marca)</td>
+                <td>@Html.DisplayFor(m=>product.Modelo)</td>
+
+                <td>@Html.DisplayFor(m=>product.Stock)</td>
+                <td>@Html.DisplayFor(m=>product.Cantidad)</td>
+                <td>@Html.DisplayFor(m => product.NumDepartamentoNavigation.NombreDepartamento)</td>
+                <td>@Html.DisplayFor(m => product.NumClaseNavigation.NombreClase)</td>
+                <td>@Html.DisplayFor(m => product.NumFamiliaNavigation.NombreFamilia)</td>
+
+                <td>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="mostrarModalProducto('@product.Sku', '@product.Articulo', '@product.Marca', '@product.Modelo', '@product.NumDepartamento', '@product.NumClase', '@product.NumFamilia', '@product.Stock', '@product.Cantidad', '@product.FechaAlta.ToString("yyyy-MM-dd")', '@product.Descontinuado')">Actualizar</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="borrarProducto('@product.Sku')">Borrar</button>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Actualizar Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="informacion-input1"></p>
+
+                            <label for="Articulo" class="control-label">Articulo</label>
+                            <input for="Articulo" class="form-control" id="ArticuloInput" required />
+
+                            <label for="Marca" class="control-label">Marca</label>
+                            <input for="Marca" class="form-control" id="MarcaInput" required  />
+
+                            <label for="Modelo" class="control-label">Modelo</label>
+                            <input for="Modelo" class="form-control" id="ModeloInput" required />
+
+                            <label for="DepartamentoId" class="control-label">Departamento</label>
+                            <select for="DepartamentoId" class="form-control" id="DepartamentoInput" asp-items="ViewBag.Departamentos"></select>
+
+                            <label for="ClaseId" class="control-label">Clase</label>
+                            <select for="ClaseId" class="form-control" id="ClaseInput" asp-items="ViewBag.Clases"></select>
+
+                            <label for="FamiliaId" class="control-label">Familia</label>
+                            <select for="FamiliaId" class="form-control" id="FamiliaInput" asp-items="ViewBag.Familias"></select>
+
+                            <label for="Stock" class="control-label">Stock</label>
+                            <input type="number" for="Stock" class="form-control" id="StockInput" min="0" required />
+
+                            <label for="Cantidad" class="control-label">Cantidad</label>
+                           <input type="number" for="Cantidad" class="form-control" id="CantidadInput" min="0" required />
+
+                            <label for="FechaAlta" class="control-label">Fecha Alta</label>
+                            <input for="FechaAlta" type="date" class="form-control" id="FechaAltaInput" required />
+
+                            <label for="Descontinuado" class="control-label">Descontinuado</label>
+                            <select for="Descontinuado" class="form-control" id="DescontinuadoInput">
+                                <option value=0 selected>No</option>
+                                <option value=1>Sí</option>
+                            </select>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <input type="submit" id="actualizarInput" class="btn btn-primary" onclick="actualizarProducto()" />
+                </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+<script>
+        function borrarProducto(sku){
+            if (confirm("¿Estás seguro de que deseas borrar este producto?")) {
+                fetch(`https://localhost:7256/api/Values/${sku}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload(); // recargar la página después de borrar el producto
+                        } else {
+                            console.log(response);
+                            alert("Error al borrar el producto");
+                        }
+                    })
+                    .catch(error => console.error(error));
+            }
+        }
+</script>
+<script>
+        function mostrarModalProducto(sku, articulo, marca, modelo, departamento, clase, familia, stock, cantidad, fechaAlta, descontinuado) {
+            $("#informacion-input1").text("SKU: " + sku);
+            $("#ArticuloInput").val(articulo);
+            $("#MarcaInput").val(marca);
+            $("#ModeloInput").val(modelo);
+            $("#DepartamentoInput").val(departamento);
+            $("#ClaseInput").val(clase);
+            $("#FamiliaInput").val(familia);
+            $("#StockInput").val(stock);
+            $("#CantidadInput").val(cantidad);
+            $("#FechaAltaInput").val(fechaAlta);
+            $("#DescontinuadoInput").val(descontinuado);
+            $("#actualizarInput").attr("onclick", "actualizarProducto(" + sku + ")");
+            $(".modal").modal("show");
+        }
+</script>
+<script>
+        function actualizarProducto(sku) {
+            const url = 'https://localhost:7256/api/Values/' + sku;
+            const options = {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "articulo": $("#ArticuloInput").val(),
+                    "marca": $("#MarcaInput").val(),
+                    "modelo": $("#ModeloInput").val(),
+                    "DepartamentoId": $("#DepartamentoInput").val(),
+                    "ClaseId": $("#ClaseInput").val(),
+                    "FamiliaId": $("#FamiliaInput").val(),
+                    "fechaAlta": $("#FechaAltaInput").val(),
+                    "stock": $("#StockInput").val(),
+                    "cantidad": $("#CantidadInput").val(),
+                    "descontinuado": $("#DescontinuadoInput").val()
+                })
+            };
+
+            fetch(url, options)
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error(error));
+        }
+
+</script>
+}
